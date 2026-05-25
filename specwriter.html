@@ -259,7 +259,7 @@
 <div class="sw-wrap">
   <div class="sw-header">
     <span class="sw-logo">Specwriter</span>
-    <span class="sw-day">SHIP69 / DAY 55</span>
+    <span class="sw-day">SHIP69 / DAY 56</span>
   </div>
 
   <div class="sw-type-row">
@@ -416,11 +416,10 @@ Return this exact shape:
 Be specific with real values — use px or rem for sizes, real hex codes for colours. If the user hasn't specified, make informed professional decisions and state them clearly. Do not use bullet points in any string value.`;
 
   try{
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
+    const res = await fetch('/api/spec',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
         max_tokens:1200,
         system,
         messages:[{role:'user',content:input}]
@@ -428,8 +427,9 @@ Be specific with real values — use px or rem for sizes, real hex codes for col
     });
 
     const data = await res.json();
-    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    const clean = raw.replace(/```json|```/g,'').trim();
+    if(!res.ok) throw new Error(data.error || 'Request failed');
+
+    const clean = (data.text||'').replace(/```json|```/g,'').trim();
     const p = JSON.parse(clean);
     lastSpec = p;
 
@@ -458,7 +458,7 @@ Be specific with real values — use px or rem for sizes, real hex codes for col
   } catch(e){
     clearInterval(lt);
     loading.classList.remove('on');
-    document.getElementById('swErr').textContent = 'Something went wrong. Check your connection and try again.';
+    document.getElementById('swErr').textContent = e.message || 'Something went wrong. Check your connection and try again.';
     document.getElementById('swErr').classList.add('on');
     btn.disabled = false;
   }
